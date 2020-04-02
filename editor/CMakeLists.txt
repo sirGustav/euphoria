@@ -22,9 +22,8 @@ set(src ${src} ${SPRITE_PROTO_SRCS} ${SPRITE_PROTO_HDRS})
 include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 
 add_executable(editor WIN32 MACOSX_BUNDLE ${src})
-target_link_libraries(editor
-                      core
-                      render
-                      window
-                      ${SDL2_LIBRARY}
-                      )
+target_link_libraries(
+    editor
+    PUBLIC core render window ${SDL2_LIBRARY}
+    PRIVATE project_options project_warnings
+)

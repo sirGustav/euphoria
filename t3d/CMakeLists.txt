@@ -17,9 +17,9 @@ source_group("" FILES ${app_src})
 include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 
 add_executable(t3d WIN32 MACOSX_BUNDLE ${src})
-target_link_libraries(t3d
-                      core
-                      render
-                      window
-                      ${SDL2_LIBRARY}
-                      )
+target_link_libraries(
+    t3d
+    PUBLIC core render window ${SDL2_LIBRARY}
+    PRIVATE project_options project_warnings
+)
+

@@ -21,8 +21,9 @@ GAF_GENERATE_CPP(GUI_PROTO_SRCS GUI_PROTO_HDRS ../file_types/gui.gaf)
 set(src ${src} ${pbjson_src} ${GUI_PROTO_SRCS} ${GUI_PROTO_HDRS})
 
 add_library(gui STATIC ${src})
+target_link_libraries(
+    gui
+    PUBLIC core render
+    PRIVATE project_options project_warnings
+)
 
-target_link_libraries(gui
-                      core
-                      render
-                      )

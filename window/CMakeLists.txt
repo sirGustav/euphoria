@@ -82,9 +82,9 @@ include_directories(SYSTEM ../external/IconFontCppHeaders/)
 include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 
 add_library(window STATIC ${src})
+target_link_libraries(
+    window
+    PUBLIC render core ${SDL2_LIBRARY}
+    PRIVATE project_options project_warnings
+)
 
-target_link_libraries(window
-                      render
-                      core
-                      ${SDL2_LIBRARY}
-                      )

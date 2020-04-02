@@ -215,8 +215,9 @@ include_directories(../external/font8x8/)
 include_directories(../external/font8x13/)
 
 add_library(core STATIC ${src})
-target_link_libraries(core
-    ${assimp_LIBRARIES}
-    ${FREETYPE_LIBRARIES}
+target_link_libraries(
+    core
+    PUBLIC ${assimp_LIBRARIES} ${FREETYPE_LIBRARIES}
+    PRIVATE project_options project_warnings
 )
 

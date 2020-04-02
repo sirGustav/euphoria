@@ -67,5 +67,8 @@ source_group("base" FILES ${test_base})
 include_directories(SYSTEM ../external/catch/)
 
 add_executable(tests ${src})
-
-TARGET_LINK_LIBRARIES(tests ${CMAKE_THREAD_LIBS_INIT} core duk minsynth)
+TARGET_LINK_LIBRARIES(
+    tests
+    PUBLIC ${CMAKE_THREAD_LIBS_INIT} core duk minsynth
+    PRIVATE project_options project_warnings
+)

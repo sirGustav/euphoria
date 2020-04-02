@@ -30,11 +30,8 @@ GAF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
 set(all_src ${all_src} ${PROTO_SRCS} ${PROTO_HDRS})
 
 add_executable(engine WIN32 MACOSX_BUNDLE ${all_src})
-
 target_link_libraries(engine
-                      core
-                      render
-                      window
-                      duk
-                      ${SDL2_LIBRARY}
-                      )
+    PUBLIC core render window duk ${SDL2_LIBRARY}
+    PRIVATE project_options project_warnings
+)
+

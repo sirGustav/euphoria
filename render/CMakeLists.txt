@@ -54,9 +54,9 @@ GAF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
 set(src ${src} ${pbjson_src} ${PROTO_SRCS} ${PROTO_HDRS})
 
 add_library(render STATIC ${src})
+target_link_libraries(
+    render
+    PUBLIC core ${OPENGL_LIBRARIES} ${CMAKE_DL_LIBS}
+    PRIVATE project_options project_warnings
+)
 
-target_link_libraries(render
-                      core
-                      ${OPENGL_LIBRARIES}
-                      ${CMAKE_DL_LIBS}
-                      )

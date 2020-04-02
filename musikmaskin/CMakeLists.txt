@@ -15,12 +15,9 @@ source_group("rtmidi" FILES ${rtmidi_src})
 include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 
 add_executable(musikmaskin WIN32 MACOSX_BUNDLE ${src})
-target_link_libraries(musikmaskin
-                      core
-                      minsynth
-                      render
-                      window
-                      ${SDL2_LIBRARY}
-                      ${CMAKE_DL_LIBS}
-                      )
+target_link_libraries(
+    musikmaskin
+    PUBLIC core minsynth render window ${SDL2_LIBRARY} ${CMAKE_DL_LIBS}
+    PRIVATE project_options project_warnings
+)
 

@@ -6,5 +6,6 @@ source_group("" FILES ${src})
 
 add_library(minsynth STATIC ${src})
 target_link_libraries(minsynth
-    core
+    PUBLIC core
+    PRIVATE project_options project_warnings
 )

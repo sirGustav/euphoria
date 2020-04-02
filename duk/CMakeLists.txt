@@ -13,5 +13,7 @@ set(src ${src} ../external/duktape/duktape/duktape.c)
 
 add_library(duk STATIC ${src})
 target_link_libraries(duk
-                      core
-                      )
+    PUBLIC core
+    PRIVATE project_options project_warnings
+)
+
