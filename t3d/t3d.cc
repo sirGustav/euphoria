@@ -47,14 +47,14 @@ namespace euphoria::t3d
     }
 
 
-    [[nodiscard]] bool
-    T3d::Start(const core::argparse::Args& args)
+    [[nodiscard]] int
+    T3d::Start(const core::argparse::Arguments& args)
     {
         engine = std::make_shared<window::Engine>();
 
-        if(engine->Setup(args) == false)
+        if(const auto r = engine->Setup(args); r != 0)
         {
-            return false;
+            return r;
         }
 
         int width  = 1280;
@@ -62,7 +62,7 @@ namespace euphoria::t3d
 
         if(engine->CreateWindow("t3d", width, height) == false)
         {
-            return false;
+            return -2;
         }
 
         viewport_handler.SetSize(width, height);
@@ -92,7 +92,7 @@ namespace euphoria::t3d
 
         engine->window->EnableCharEvent(!immersive_mode);
 
-        return true;
+        return 0;
     }
 
 
@@ -697,7 +697,8 @@ namespace euphoria::t3d
     T3d::Frame()
     {
         show_imgui = !immersive_mode;
-        const float delta      = timer->Update();
+        //  const float delta =
+            timer->Update();
 
         world->Step();
         editor->tools.PerformTools();

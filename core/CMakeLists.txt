@@ -76,6 +76,8 @@ set(app_src_table
 
 
 set(app_src
+    result.cc result.h
+    custom_parser.cc custom_parser.h
     argparse.cc argparse.h
     assert.cc assert.h
     base64.cc base64.h
@@ -150,6 +152,7 @@ set(app_src
     vfs_imagegenerator.cc vfs_imagegenerator.h
     vfs_path.cc vfs_path.h
     viewport.cc viewport.h
+    wordwrap.cc wordwrap.h
 )
 
 source_group("" FILES ${app_src})

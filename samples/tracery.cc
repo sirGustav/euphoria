@@ -1,6 +1,10 @@
 #include "core/tracery.h"
+
+#include "core/argparse.h"
+
 #include <iostream>
 #include <fstream>
+
 
 namespace tracery = euphoria::core::tracery;
 
@@ -21,12 +25,20 @@ LoadFromFile(tracery::Grammar* grammar, const std::string& file)
 int
 main(int argc, char* argv[])
 {
-    // todo(Gustav): use argparse!
-    if(argc >= 2)
+    using namespace euphoria::core::argparse;
+
+    std::string file;
+    std::string rule = "#origin#";
+    int count = 1;
+
+    auto parser = Parser{"Tracery-like terminal interface."};
+    parser.Add("file", &file).Help("the tracery rule file");
+    parser.Add("--rule", &rule).Help("the starting to expand from");
+    parser.Add("--count", &count).Help("how many times to run the rule");
+
+    parser.OnComplete([&]
     {
         tracery::Grammar grammar;
-
-        const std::string file = argv[1];
 
         grammar.RegisterEnglish();
 
@@ -34,26 +46,22 @@ main(int argc, char* argv[])
         if(load_result == false)
         {
             std::cerr << load_result << "\n";
-            return 3;
+            return ParseResult::Error;
         }
 
-        const std::string rule  = (argc >= 3) ? argv[2] : "#origin#";
-        const int         count = (argc >= 4) ? atoi(argv[3]) : 1;
         for(int i = 0; i < count; ++i)
         {
             const auto flatten_result = grammar.Flatten(rule);
             if(flatten_result == false)
             {
                 std::cerr << flatten_result;
-                return 2;
+                return ParseResult::Error;
             }
             std::cout << flatten_result.GetText() << "\n";
         }
+
+        return ParseResult::Ok;
     }
-    else
-    {
-        std::cerr << "Expected input!\n";
-        std::cerr << argv[0] << " json-file [rule] [count]\n";
-    }
-    return 0;
+    );
+    return ParseFromMain(&parser, argc, argv);
 }

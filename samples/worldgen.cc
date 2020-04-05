@@ -282,104 +282,140 @@ HandleCellCommand
 }
 
 
-int
-main(int argc, char* argv[])
+struct CommonArguments
 {
-    auto parser = argparse::Parser {"Generate worlds"};
-
-    int world_width  = 10;
+    int world_width = 10;
     int world_height = 10;
     std::string output = "maze.png";
 
-    int world_scale = 1;
-    BorderSetupRule border_control = BorderSetupRule::AlwaysWall;
-    float random_fill = 0.5;
-    bool debug = false;
+    void
+    Add(argparse::ParserBase* base)
+    {
+        base->Add("--width", &world_width).Help("set the height");
+        base->Add("--height", &world_height).Help("set the width");
+        base->Add("-o, --output", &output).Help("specify output");
+    }
+};
 
+
+struct MazeArguments : public CommonArguments
+{
     int cell_size = 1;
     int wall_size = 1;
     bool console = false;
 
-    auto add_common = [&](argparse::Parser& parser)
+    void
+    Add(argparse::ParserBase* base)
     {
-        parser.AddSimple("--width", &world_width).Help("set the height");
-        parser.AddSimple("--height", &world_height).Help("set the width");
-        parser.AddSimple("-o, --output", &output).Help("specify output");
-    };
+        CommonArguments::Add(base);
 
-    auto add_maze = [&](argparse::Parser& parser)
-    {
-        parser.AddSimple("--cell", &cell_size).Help("set the cell size");
-        parser.AddSimple("--wall", &wall_size).Help("set the wall size");
-        parser.SetTrue("-c,--console", &console).Help("foce console");
-    };
+        base->Add("--cell", &cell_size).Help("set the cell size");
+        base->Add("--wall", &wall_size).Help("set the wall size");
+        base->SetTrue("-c,--console", &console).Help("foce console");
+    }
+};
 
-    auto add_cell = [&](argparse::Parser& parser) {
-        parser.AddSimple("--scale", &world_scale).Help("set the scale");
-        parser.AddSimple("--fill", &random_fill).Help("How much to fill");
-        parser.AddEnum("-bc, --border_control", &border_control).Help("Change how the border is generated");
-        parser.SetTrue("--debug", &debug);
-    };
 
-    auto maze_command = [&](MazeAlgorithm algo)
+int
+main(int argc, char* argv[])
+{
+    auto parser = argparse::Parser {"Generate worlds"};
+    
+    auto sub = parser.AddSubParsers();
+
+    auto maze_command = [&](MazeAlgorithm algo, const MazeArguments& arg)
     {
         HandleMazeCommand
         (
             algo,
-            world_width,
-            world_height,
-            cell_size,
-            wall_size,
-            output,
-            console
+            arg.world_width,
+            arg.world_height,
+            arg.cell_size,
+            arg.wall_size,
+            arg.output,
+            arg.console
         );
     };
 
-    auto precursive = parser.AddSubParser
+    sub->Add
     (
         "recursive",
         "maze generation using recursive backtracker algorithm",
-        [&]{ maze_command(MazeAlgorithm::RecursiveBacktracker); }
-    );
-    add_common(*precursive);
-    add_maze(*precursive);
-
-    auto prandom = parser.AddSubParser
-    (
-        "random",
-        "maze generation using random traversal algorithm",
-        [&] { maze_command(MazeAlgorithm::RandomTraversal); }
-    );
-    add_common(*prandom);
-    add_maze(*prandom);
-
-    auto pcell = parser.AddSubParser
-    (
-        "cell",
-        "world generation using cellular automata algorithm",
-        [&]
+        [&](argparse::SubParser* sub)
         {
-            HandleCellCommand
+            auto args = MazeArguments{};
+            args.Add(sub);
+
+            return sub->OnComplete
             (
-                debug,
-                random_fill,
-                world_width,
-                world_height,
-                Fourway{ border_control },
-                Fourway{ OutsideRule::Wall },
-                output,
-                world_scale
+                [&]
+                {
+                    maze_command(MazeAlgorithm::RecursiveBacktracker, args);
+                    return argparse::ParseResult::Ok;
+                }
             );
         }
     );
-    add_common(*pcell);
-    add_cell(*pcell);
+    
+    sub->Add
+    (
+        "random",
+        "maze generation using random traversal algorithm",
+        [&](argparse::SubParser* sub)
+        {
+            auto args = MazeArguments{};
+            args.Add(sub);
 
-    const auto status = parser.Parse(argc, argv);
-    if(status != argparse::ParseResult::Ok)
-    {
-        return -1;
-    }
+            return sub->OnComplete
+            (
+                [&]
+                {
+                    maze_command(MazeAlgorithm::RandomTraversal, args);
+                    return argparse::ParseResult::Ok;
+                }
+            );
+        }
+    );
 
-    return 0;
+    sub->Add
+    (
+        "cell",
+        "world generation using cellular automata algorithm",
+        [&](argparse::SubParser* sub)
+        {
+            int world_scale = 1;
+            BorderSetupRule border_control = BorderSetupRule::AlwaysWall;
+            float random_fill = 0.5;
+            bool debug = false;
+            auto common = CommonArguments{};
+            
+            common.Add(sub);
+
+            sub->Add("--scale", &world_scale).Help("set the scale");
+            sub->Add("--fill", &random_fill).Help("How much to fill");
+            sub->Add("-bc, --border_control", &border_control).Help("Change how the border is generated");
+            sub->SetTrue("--debug", &debug);
+
+            return sub->OnComplete
+            (
+                [&]
+                {
+                    HandleCellCommand
+                    (
+                        debug,
+                        random_fill,
+                        common.world_width,
+                        common.world_height,
+                        Fourway{ border_control },
+                        Fourway{ OutsideRule::Wall },
+                        common.output,
+                        world_scale
+                    );
+                    return argparse::ParseResult::Ok;
+                }
+            );
+        }
+    );
+
+    return argparse::ParseFromMain(&parser, argc, argv);
 }

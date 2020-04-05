@@ -7,20 +7,23 @@
 #include "core/palette_all.h"
 #include "core/palette.h"
 #include "core/str.h"
+#include "core/cint.h"
+
 
 using namespace euphoria::core;
+
 
 int
 main(int argc, char* argv[])
 {
     auto image_size = 32;
 
-    auto parser = argparse::Parser {"euphoria raytracer"};
-    parser.AddSimple("-size", &image_size).Help("Minimum image size");
+    auto parser = argparse::Parser {"euphoria palette generator"};
+    parser.Add("-size", &image_size).Help("Minimum image size");
 
-    if(parser.Parse(argc, argv) != argparse::ParseResult::Ok)
+    if(const auto r = parser.Parse(argc, argv))
     {
-        return -1;
+        return *r;
     }
 
     for (auto palette_name : palette::PaletteNames)
@@ -30,9 +33,21 @@ main(int argc, char* argv[])
         Image image;
         image.SetupNoAlphaSupport(image_size * pal.colors.size(), image_size);
 
-        for (int i = 0; i < pal.colors.size(); i += 1)
+        for
+        (
+            int i = 0;
+            i < Csizet_to_int(pal.colors.size());
+            i += 1
+        )
         {
-            DrawSquare(&image, pal.colors[i], image_size * i, image_size-1, image_size);
+            DrawSquare
+            (
+                &image,
+                pal.colors[i],
+                image_size * i,
+                image_size - 1,
+                image_size
+            );
         }
 
         const std::string file = Str{} << "palette_" << pal.name << ".png";

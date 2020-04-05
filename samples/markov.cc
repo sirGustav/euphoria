@@ -312,32 +312,52 @@ main(int argc, char* argv[])
 {
     core::argparse::Parser parser {"markov tool"};
 
-    std::string file;
-    int         memory = 4;
-    int         count  = 25;
+    auto sub = parser.AddSubParsers();
 
-    auto sent = parser.AddSubParser(
-            "sentance", "parses and generates sentances", [&]() {
+    sub->Add
+    (
+        "sentance",
+        "parses and generates sentances",
+        [&](core::argparse::SubParser* sent)
+        {
+            std::string file;
+            int memory = 4;
+            int count = 25;
+
+            sent->Add("file", &file);
+            sent->Add("--memory", &memory);
+            sent->Add("--count", &count);
+
+            return sent->OnComplete([&]
+            {
                 MarkovSentance(file, memory, count);
+                return core::argparse::ParseResult::Ok;
             });
-    sent->AddSimple("file", &file);
-    sent->AddSimple("--memory", &memory);
-    sent->AddSimple("--count", &count);
+        }
+    );
 
-    auto word = parser.AddSubParser("word", "parses and generates word", [&]() {
-        MarkovWord(file, memory, count);
-    });
-    word->AddSimple("file", &file);
-    word->AddSimple("--memory", &memory);
-    word->AddSimple("--count", &count);
+    sub->Add
+    (
+        "word",
+        "parses and generates word",
+        [&](core::argparse::SubParser* word)
+        {
+            std::string file;
+            int memory = 4;
+            int count = 25;
 
-    auto result = parser.Parse(argc, argv);
-    if(result == core::argparse::ParseResult::Failed)
-    {
-        return -2;
-    }
-    else
-    {
-        return 0;
-    }
+            word->Add("file", &file);
+            word->Add("--memory", &memory);
+            word->Add("--count", &count);
+
+            return word->OnComplete([&]
+            {
+                MarkovWord(file, memory, count);
+                return core::argparse::ParseResult::Ok;
+            });
+        }
+    );
+    
+
+    return core::argparse::ParseFromMain(&parser, argc, argv);
 }
